@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { cloneDeep } from 'lodash-es'
 import { ComponentPropsType } from '@/components/SurveyComponent'
-import { getNextSelectComponentId } from './utils'
+import { getNextSelectComponentId, swapArrayElements } from './utils'
 import { nanoid } from 'nanoid'
 
 export type ComponentType = {
@@ -164,6 +164,14 @@ export const componentSlice = createSlice({
 
       component.title = action.payload.title
     },
+    setComponentOrder: (
+      state: ComponentState,
+      action: PayloadAction<{ index1: number; index2: number }>
+    ) => {
+      const { index1, index2 } = action.payload
+
+      swapArrayElements(state.componentsList, index1, index2)
+    },
   },
 })
 
@@ -179,6 +187,7 @@ export const {
   setComponentCopy,
   setComponentPaste,
   setComponentTitle,
+  setComponentOrder,
 } = componentSlice.actions
 
 export default componentSlice.reducer

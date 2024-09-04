@@ -20,12 +20,16 @@ import {
   setAppendNewComponent,
   setComponentHideStatus,
   setComponentLockStatus,
+  setComponentOrder,
   setComponentTitle,
   setSelectedComponentId,
 } from '@/store/component/componentReducer'
 import { nanoid } from 'nanoid'
 import useGetSurveyDetailInfo from '@/hooks/useGetSurveyDetailInfo'
 import classNames from 'classnames'
+import { DndContext, DragEndEvent } from '@dnd-kit/core'
+import Draggable from '@/components/DragComponent/Draggable'
+import Droppable from '@/components/DragComponent/Droppable'
 
 type PropTypes = {}
 
@@ -100,52 +104,75 @@ const ConfigComponentList: FC<{ componentsList: ComponentType[]; selectedCompone
     dispatch(setComponentTitle({ id, title }))
   }
 
-  return componentsList.map(item => {
-    const { id, title, isLock, isHide } = item
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { over, active } = event
 
-    const isActive = selectedComponentId === id
+    if (!over) return
 
-    return (
-      <div
-        className={classNames({
-          [styles['component-row']]: true,
-          [styles['active']]: isActive,
-        })}
-        key={id}
-        onClick={() => dispatch(setSelectedComponentId(id))}
-      >
-        <div className={styles['component-name']} onClick={() => setUpdateComponentId(id)}>
-          {id === updateComponentId ? (
-            <Input
-              value={title}
-              autoFocus
-              onChange={e => onTitleEdit(e, id)}
-              onPressEnter={() => setUpdateComponentId(null)}
-              onBlur={() => setUpdateComponentId(null)}
-            />
-          ) : (
-            title
-          )}
-        </div>
-        <div className={styles['component-buttons']}>
-          <Space>
-            <Button
-              shape="circle"
-              size="small"
-              icon={isLock ? <UnlockOutlined /> : <LockOutlined />}
-              onClick={e => onToggleLock(e, id, !isLock)}
-            />
-            <Button
-              shape="circle"
-              size="small"
-              icon={isHide ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-              onClick={e => onToggleHide(e, id, !isHide)}
-            />
-          </Space>
-        </div>
-      </div>
-    )
-  })
+    const currentId = active.id
+    const previousId = over.id
+
+    const index1 = componentsList.findIndex(item => item.id === currentId)
+    const index2 = componentsList.findIndex(item => item.id === previousId)
+
+    if (index1 === -1 || index2 === -1) return
+
+    dispatch(setComponentOrder({ index1, index2 }))
+  }
+
+  return (
+    <DndContext onDragEnd={handleDragEnd}>
+      {componentsList.map(item => {
+        const { id, title, isLock, isHide } = item
+
+        const isActive = selectedComponentId === id
+
+        return (
+          <Draggable key={id} id={id}>
+            <Droppable id={id}>
+              <div
+                className={classNames({
+                  [styles['component-row']]: true,
+                  [styles['active']]: isActive,
+                })}
+                onClick={() => dispatch(setSelectedComponentId(id))}
+              >
+                <div className={styles['component-name']} onClick={() => setUpdateComponentId(id)}>
+                  {id === updateComponentId ? (
+                    <Input
+                      value={title}
+                      autoFocus
+                      onChange={e => onTitleEdit(e, id)}
+                      onPressEnter={() => setUpdateComponentId(null)}
+                      onBlur={() => setUpdateComponentId(null)}
+                    />
+                  ) : (
+                    title
+                  )}
+                </div>
+                <div className={styles['component-buttons']}>
+                  <Space>
+                    <Button
+                      shape="circle"
+                      size="small"
+                      icon={isLock ? <UnlockOutlined /> : <LockOutlined />}
+                      onClick={e => onToggleLock(e, id, !isLock)}
+                    />
+                    <Button
+                      shape="circle"
+                      size="small"
+                      icon={isHide ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                      onClick={e => onToggleHide(e, id, !isHide)}
+                    />
+                  </Space>
+                </div>
+              </div>
+            </Droppable>
+          </Draggable>
+        )
+      })}
+    </DndContext>
+  )
 }
 
 const SurveyComponentList: FC<PropTypes> = () => {

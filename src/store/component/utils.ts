@@ -21,3 +21,15 @@ export function getNextSelectComponentId(state: ComponentState, id: string) {
 
   return ''
 }
+
+/**
+ * @description: 交换数组内容
+ * @param {any} array
+ * @param {number} index1
+ * @param {number} index2
+ */
+export function swapArrayElements(array: any[], index1: number, index2: number) {
+  const temp = array[index1]
+  array[index1] = array[index2]
+  array[index2] = temp
+}

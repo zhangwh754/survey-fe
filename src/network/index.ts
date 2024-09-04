@@ -1,4 +1,3 @@
-import useGetSurveyDetailInfo from '@/hooks/useGetSurveyDetailInfo'
 import service from './service'
 import { PageState } from '@/store/pageReducer'
 import { ComponentType } from '@/store/component/componentReducer'
